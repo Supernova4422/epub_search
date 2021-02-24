@@ -7,7 +7,7 @@ import (
 )
 
 func TestNoMatch(t *testing.T) {
-	_, err := GetAdjacent("", strings.NewReader("<ta<ta<bl>"))
+	_, err := GetAdjacent("", strings.NewReader("<ta<ta<bl>"), false)
 
 	if err == nil {
 		t.Fail()
@@ -23,7 +23,7 @@ func TestQuery(t *testing.T) {
 		expect,
 	)
 
-	result, err := GetAdjacent(query, strings.NewReader(content))
+	result, err := GetAdjacent(query, strings.NewReader(content), false)
 
 	if err != nil || expect != result {
 		t.Fail()
@@ -39,7 +39,7 @@ func TestBackwardsQuery(t *testing.T) {
 		query,
 	)
 
-	result, err := GetAdjacent(query, strings.NewReader(content))
+	result, err := GetAdjacent(query, strings.NewReader(content), false)
 
 	if err != nil || expect != result {
 		t.Fail()
@@ -55,7 +55,7 @@ func TestTwo(t *testing.T) {
 		query,
 	)
 
-	result, err := GetAdjacent(query, strings.NewReader(content))
+	result, err := GetAdjacent(query, strings.NewReader(content), false)
 
 	if err != nil || expect != result {
 		t.Fail()
@@ -70,7 +70,7 @@ func TestDiacritics(t *testing.T) {
 		query,
 	)
 
-	result, err := GetAdjacent("é", strings.NewReader(content))
+	result, err := GetAdjacent("é", strings.NewReader(content), false)
 
 	if err != nil || expect != result {
 		t.Fail()
@@ -86,7 +86,7 @@ func TestWithoutDiacritics(t *testing.T) {
 		query,
 	)
 
-	result, err := GetAdjacent("e", strings.NewReader(content))
+	result, err := GetAdjacent("e", strings.NewReader(content), false)
 
 	if err != nil || expect != result {
 		t.Fail()
@@ -104,9 +104,18 @@ func TestFavorDiacritics(t *testing.T) {
 		queryDiacritic,
 	)
 
-	result, err := GetAdjacent(query, strings.NewReader(content))
+	result, err := GetAdjacent(query, strings.NewReader(content), false)
 
 	if err != nil || expect != result {
+		t.Fail()
+	}
+}
+
+func TestRemoveDiacritics(t *testing.T) {
+	char := "é"
+	result := RemoveDiacritics(char)
+
+	if result != "e" {
 		t.Fail()
 	}
 }
