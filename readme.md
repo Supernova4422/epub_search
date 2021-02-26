@@ -1,6 +1,6 @@
 # Epub Search
 Epub search runs a simple web server that provides search results from files.
-This project is used as a webserver to
+This project is used as a webserver to 
 [boby](https://github.com/BKrajancic/boby)
 
 # Running Environment
@@ -22,9 +22,10 @@ This can be done by renaming an epub file to .zip, then extracting files.
 compilation things to run this project.
 
 The .xhtml files must contain tables with only two columns. A user searches the
-dictionary by making a query such as http://localhost:8080/?q=Hello the server
-will search through all files until it finds a cell with "Hello" then it will
-give the result that's next to it.
+dictionary by making a query such as
+http://localhost:8080/?q=Hello&f=foldername the server
+will search through all files under foldername until it finds a cell with
+"Hello" then it will give the result that's next to it.
 
-The unit tests will help understanding.
+The unit tests will help with understanding.
 

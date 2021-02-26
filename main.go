@@ -21,8 +21,10 @@ func main() {
 	flag.Parse()
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		subfolder := r.URL.Query().Get("f")
 		query := r.URL.Query().Get("q")
-		files, err := ioutil.ReadDir(folder)
+		queryFolder := filepath.Join(folder, subfolder)
+		files, err := ioutil.ReadDir(queryFolder)
 		if err != nil {
 			return
 		}
@@ -32,7 +34,7 @@ func main() {
 				continue
 			}
 
-			fullPath := filepath.Join(folder, file.Name())
+			fullPath := filepath.Join(queryFolder, file.Name())
 			contents, err := os.Open(fullPath)
 			defer contents.Close()
 
