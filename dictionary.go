@@ -12,29 +12,16 @@ import (
 	"golang.org/x/text/unicode/norm"
 )
 
-/*
-
-func FindMatch(query string, html io.Reader, removeDiacritics bool) (string, error) {
-	doc, err := goquery.NewDocumentFromReader(html)
-	res, err := GetAdjacent(query, doc, false)
-	if err == nil {
-		return res, nil
-	}
-}
-*/
-
 // GetAdjacent finds tables, then returns cells adjacent to those matching query.
 //
 // html is expected to be HTML or XHTML conformant.
 // Query is a string.
-func GetAdjacent(query string, html io.Reader, removeDiacritics bool) (string, error) {
+func GetAdjacent(query string, html io.Reader) (string, error) {
+	query = strings.ToLower(query)
+
 	doc, err := goquery.NewDocumentFromReader(html)
 	if err != nil {
 		return "", err
-	}
-
-	if removeDiacritics {
-		query = RemoveDiacritics(query)
 	}
 
 	rows := doc.Find("td")
@@ -45,6 +32,7 @@ func GetAdjacent(query string, html io.Reader, removeDiacritics bool) (string, e
 	)
 
 	match := foo(rows, func(rhs string) bool {
+		rhs = strings.ToLower(rhs)
 		return query == rhs
 	})
 	if len(match.Nodes) != 0 {
@@ -54,6 +42,7 @@ func GetAdjacent(query string, html io.Reader, removeDiacritics bool) (string, e
 	queryWithoutDiacritics := RemoveDiacritics(query)
 
 	match = foo(rows, func(rhs string) bool {
+		rhs = strings.ToLower(rhs)
 		return queryWithoutDiacritics == RemoveDiacritics(rhs)
 	})
 	if len(match.Nodes) != 0 {
@@ -61,14 +50,26 @@ func GetAdjacent(query string, html io.Reader, removeDiacritics bool) (string, e
 	}
 
 	match = foo(rows, func(rhs string) bool {
-		return strings.Contains(rhs, query)
+		rhs = strings.ToLower(rhs)
+		for _, word := range strings.Fields(rhs) {
+			if word == query {
+				return true
+			}
+		}
+		return false
 	})
 	if len(match.Nodes) != 0 {
 		return match.Text(), nil
 	}
 
 	match = foo(rows, func(rhs string) bool {
-		return strings.Contains(RemoveDiacritics(rhs), queryWithoutDiacritics)
+		rhs = strings.ToLower(rhs)
+		for _, word := range strings.Fields(RemoveDiacritics(rhs)) {
+			if word == query {
+				return true
+			}
+		}
+		return false
 	})
 	if len(match.Nodes) != 0 {
 		return match.Text(), nil

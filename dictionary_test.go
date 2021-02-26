@@ -7,7 +7,7 @@ import (
 )
 
 func TestNoMatch(t *testing.T) {
-	_, err := GetAdjacent("", strings.NewReader("<ta<ta<bl>"), false)
+	_, err := GetAdjacent("", strings.NewReader("<ta<ta<bl>"))
 
 	if err == nil {
 		t.Fail()
@@ -23,7 +23,7 @@ func TestQuery(t *testing.T) {
 		expect,
 	)
 
-	result, err := GetAdjacent(query, strings.NewReader(content), false)
+	result, err := GetAdjacent(query, strings.NewReader(content))
 
 	if err != nil || expect != result {
 		t.Fail()
@@ -39,7 +39,7 @@ func TestBackwardsQuery(t *testing.T) {
 		query,
 	)
 
-	result, err := GetAdjacent(query, strings.NewReader(content), false)
+	result, err := GetAdjacent(query, strings.NewReader(content))
 
 	if err != nil || expect != result {
 		t.Fail()
@@ -55,7 +55,7 @@ func TestTwo(t *testing.T) {
 		query,
 	)
 
-	result, err := GetAdjacent(query, strings.NewReader(content), false)
+	result, err := GetAdjacent(query, strings.NewReader(content))
 
 	if err != nil || expect != result {
 		t.Fail()
@@ -70,7 +70,7 @@ func TestDiacritics(t *testing.T) {
 		query,
 	)
 
-	result, err := GetAdjacent("é", strings.NewReader(content), false)
+	result, err := GetAdjacent("é", strings.NewReader(content))
 
 	if err != nil || expect != result {
 		t.Fail()
@@ -86,7 +86,7 @@ func TestWithoutDiacritics(t *testing.T) {
 		query,
 	)
 
-	result, err := GetAdjacent("e", strings.NewReader(content), false)
+	result, err := GetAdjacent("e", strings.NewReader(content))
 
 	if err != nil || expect != result {
 		t.Fail()
@@ -104,7 +104,7 @@ func TestFavorDiacritics(t *testing.T) {
 		queryDiacritic,
 	)
 
-	result, err := GetAdjacent(query, strings.NewReader(content), false)
+	result, err := GetAdjacent(query, strings.NewReader(content))
 
 	if err != nil || expect != result {
 		t.Fail()
@@ -116,6 +116,41 @@ func TestRemoveDiacritics(t *testing.T) {
 	result := RemoveDiacritics(char)
 
 	if result != "e" {
+		t.Fail()
+	}
+}
+
+func TestContains(t *testing.T) {
+	query := "tést"
+	expect := "b"
+
+	content := fmt.Sprintf(
+		"<table><tr><td>e</td><td>c</td></tr><tr><td>%s</td><td>word1 %s word2</td></tr></table>",
+		expect,
+		query,
+	)
+
+	result, err := GetAdjacent(query, strings.NewReader(content))
+
+	if err != nil || expect != result {
+		t.Fail()
+	}
+}
+
+func TestContainsNoDiacritics(t *testing.T) {
+	query := "tést"
+	queryWithoutDiacritics := "test"
+	expect := "b"
+
+	content := fmt.Sprintf(
+		"<table><tr><td>e</td><td>c</td></tr><tr><td>%s</td><td>word1 %s word2</td></tr></table>",
+		expect,
+		query,
+	)
+
+	result, err := GetAdjacent(queryWithoutDiacritics, strings.NewReader(content))
+
+	if err != nil || expect != result {
 		t.Fail()
 	}
 }
