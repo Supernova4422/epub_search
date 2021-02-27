@@ -57,14 +57,19 @@ func main() {
 					bestRank = rank
 				}
 
-				output := result.Parent().Text()
-				output = strings.ReplaceAll(output, "\n", " ")
-				if rank < bestRank {
-					matches = append(matches, "")
-					copy(matches[1:], matches)
-					matches[0] = output
-				} else {
-					matches = append(matches, output)
+				for i := 0; i < len(result.Nodes); i++ {
+					node := result.Eq(i)
+					parent := node.Parent()
+					output := parent.Text()
+					fmt.Print(output)
+					output = strings.ReplaceAll(output, "\n", " ")
+					if rank < bestRank {
+						matches = append(matches, "")
+						copy(matches[1:], matches)
+						matches[0] = output
+					} else {
+						matches = append(matches, output)
+					}
 				}
 			}
 		}
