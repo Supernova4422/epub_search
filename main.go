@@ -69,7 +69,15 @@ func main() {
 			}
 		}
 
-		result := strings.Join(matches[0:3], "\n")
+		result := ""
+		for _, match := range matches {
+			joined := result + "\n" + match
+			if len(joined) > 1700 {
+				result = joined
+			} else {
+				break
+			}
+		}
 		fmt.Fprintf(w, "<p id=\"result\">"+result+"</p>")
 	})
 
