@@ -73,9 +73,9 @@ func main() {
 		for _, match := range matches {
 			joined := result + "\n" + match
 			if len(joined) > 1700 {
-				result = joined
-			} else {
 				break
+			} else {
+				result = joined
 			}
 		}
 		fmt.Fprintf(w, "<p id=\"result\">"+result+"</p>")
