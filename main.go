@@ -8,6 +8,8 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+
+	"github.com/PuerkitoBio/goquery"
 )
 
 func main() {
@@ -16,7 +18,12 @@ func main() {
 
 	// flags declaration using flag package
 	flag.IntVar(&port, "p", 0, "Port this server will run on.")
-	flag.StringVar(&folder, "f", "", "Specify folder that contians source files.")
+	flag.StringVar(
+		&folder,
+		"f",
+		"",
+		"Path to folder that contains folders that contain source files.",
+	)
 
 	flag.Parse()
 
@@ -28,6 +35,10 @@ func main() {
 		if err != nil {
 			return
 		}
+
+		var bestResult goquery.Selection
+		var bestRank int
+		found := false
 
 		for _, file := range files {
 			if file.IsDir() {
@@ -42,10 +53,16 @@ func main() {
 				return
 			}
 
-			result, err := GetAdjacent(query, contents)
-			if err == nil {
-				fmt.Fprintf(w, "<p id=\"result\">"+result+"</p>")
+			rank, result, err := GetAdjacent(query, contents)
+			if err == nil && (found == false || rank < bestRank) {
+				found = true
+				bestRank = rank
+				bestResult = *result
 			}
+		}
+
+		if found {
+			fmt.Fprintf(w, "<p id=\"result\">"+bestResult.Text()+"</p>")
 		}
 	})
 

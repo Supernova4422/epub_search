@@ -12,45 +12,53 @@ import (
 	"golang.org/x/text/unicode/norm"
 )
 
+func cleanInput(str string) string {
+	str = strings.ToLower(str)
+	str = strings.ReplaceAll(str, ",", " ")
+	str = strings.ReplaceAll(str, ".", " ")
+	return str
+}
+
 // GetAdjacent finds tables, then returns cells adjacent to those matching query.
 //
 // html is expected to be HTML or XHTML conformant.
 // Query is a string.
-func GetAdjacent(query string, html io.Reader) (string, error) {
+func GetAdjacent(query string, html io.Reader) (int, *goquery.Selection, error) {
 	query = strings.ToLower(query)
 
 	doc, err := goquery.NewDocumentFromReader(html)
 	if err != nil {
-		return "", err
+		return 0, nil, err
 	}
 
 	rows := doc.Find("td")
 	rows = rows.FilterFunction(
 		func(_ int, col *goquery.Selection) bool {
-			return col.Parent().Children().Length() == 2
+			return col.Parent().Children().Length() >= 2
 		},
 	)
 
 	match := foo(rows, func(rhs string) bool {
-		rhs = strings.ToLower(rhs)
+		rhs = cleanInput(rhs)
 		return query == rhs
 	})
 	if len(match.Nodes) != 0 {
-		return match.Text(), nil
+		return 0, match, nil
 	}
 
 	queryWithoutDiacritics := RemoveDiacritics(query)
 
 	match = foo(rows, func(rhs string) bool {
-		rhs = strings.ToLower(rhs)
+		rhs = cleanInput(rhs)
 		return queryWithoutDiacritics == RemoveDiacritics(rhs)
 	})
 	if len(match.Nodes) != 0 {
-		return match.Text(), nil
+		return 0, match, nil
 	}
 
 	match = foo(rows, func(rhs string) bool {
-		rhs = strings.ToLower(rhs)
+		rhs = cleanInput(rhs)
+
 		for _, word := range strings.Fields(rhs) {
 			if word == query {
 				return true
@@ -59,11 +67,11 @@ func GetAdjacent(query string, html io.Reader) (string, error) {
 		return false
 	})
 	if len(match.Nodes) != 0 {
-		return match.Text(), nil
+		return 1, match, nil
 	}
 
 	match = foo(rows, func(rhs string) bool {
-		rhs = strings.ToLower(rhs)
+		rhs = cleanInput(rhs)
 		for _, word := range strings.Fields(RemoveDiacritics(rhs)) {
 			if word == query {
 				return true
@@ -72,18 +80,23 @@ func GetAdjacent(query string, html io.Reader) (string, error) {
 		return false
 	})
 	if len(match.Nodes) != 0 {
-		return match.Text(), nil
+		return 2, match, nil
 	}
 
-	return "", errors.New("no result found")
+	return 0, nil, errors.New("no result found")
 }
 
 func foo(rows *goquery.Selection, match func(string) bool) *goquery.Selection {
 	return rows.FilterFunction(
 		func(_ int, col *goquery.Selection) bool {
-			otherCol := col.Next()
-			if len(otherCol.Nodes) == 0 {
-				otherCol = col.Prev()
+
+			otherCol := col
+			if col.Prev().Nodes == nil {
+				otherCol = otherCol.Siblings().Last()
+			} else if col.Next().Nodes == nil {
+				otherCol = otherCol.Siblings().First()
+			} else {
+				return false
 			}
 
 			return match(otherCol.Text())
