@@ -53,23 +53,22 @@ func main() {
 
 			rank, result, err := GetAdjacent(query, contents)
 			if err == nil {
-				prepend := false
-				if rank <= bestRank || bestRank < 0 {
+				if bestRank < 0 {
 					bestRank = rank
-					prepend = true
+				}
 
-					output := result.Parent().Text()
-					output = strings.ReplaceAll(output, "\n", " ")
-					if prepend {
-						matches = append(matches, "")
-						copy(matches[1:], matches)
-						matches[0] = output
-					} else {
-						matches = append(matches, output)
-					}
+				output := result.Parent().Text()
+				output = strings.ReplaceAll(output, "\n", " ")
+				if rank < bestRank {
+					matches = append(matches, "")
+					copy(matches[1:], matches)
+					matches[0] = output
+				} else {
+					matches = append(matches, output)
 				}
 			}
 		}
+
 		result := strings.Join(matches, "<br>")
 		fmt.Fprintf(w, "<p id=\"result\">"+result+"</p>")
 	})
