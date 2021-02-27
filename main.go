@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"math"
 	"net/http"
 	"os"
 	"path/filepath"
-
-	"github.com/PuerkitoBio/goquery"
+	"strings"
 )
 
 func main() {
@@ -36,9 +36,8 @@ func main() {
 			return
 		}
 
-		var bestResult goquery.Selection
-		var bestRank int
-		found := false
+		bestRank := math.MaxInt64
+		matches := make([]string, 0)
 
 		for _, file := range files {
 			if file.IsDir() {
@@ -54,16 +53,26 @@ func main() {
 			}
 
 			rank, result, err := GetAdjacent(query, contents)
-			if err == nil && (found == false || rank < bestRank) {
-				found = true
-				bestRank = rank
-				bestResult = *result
+			if err == nil {
+				prepend := false
+				if rank <= bestRank {
+					bestRank = rank
+					prepend = true
+
+					output := result.Parent().Text()
+					output = strings.ReplaceAll(output, "\n", " ")
+					if prepend {
+						matches = append(matches, "")
+						copy(matches[1:], matches)
+						matches[0] = output
+					} else {
+						matches = append(matches, output)
+					}
+				}
 			}
 		}
-
-		if found {
-			fmt.Fprintf(w, "<p id=\"result\">"+bestResult.Parent().Text()+"</p>")
-		}
+		result := strings.Join(matches, "<br>")
+		fmt.Fprintf(w, "<p id=\"result\">"+result+"</p>")
 	})
 
 	http.ListenAndServe(fmt.Sprintf(":%d", port), nil)
