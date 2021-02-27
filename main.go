@@ -69,7 +69,7 @@ func main() {
 			}
 		}
 
-		result := strings.Join(matches, "\n")
+		result := strings.Join(matches[0:3], "\n")
 		fmt.Fprintf(w, "<p id=\"result\">"+result+"</p>")
 	})
 
