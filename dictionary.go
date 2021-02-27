@@ -34,7 +34,7 @@ func GetAdjacent(query string, html io.Reader) (int, *goquery.Selection, error) 
 	rows := doc.Find("td")
 	rows = rows.FilterFunction(
 		func(_ int, col *goquery.Selection) bool {
-			return col.Parent().Children().Length() >= 2
+			return col.Parent().Children().Length() > 0
 		},
 	)
 
@@ -89,14 +89,15 @@ func GetAdjacent(query string, html io.Reader) (int, *goquery.Selection, error) 
 func foo(rows *goquery.Selection, match func(string) bool) *goquery.Selection {
 	return rows.FilterFunction(
 		func(_ int, col *goquery.Selection) bool {
-
 			otherCol := col
-			if col.Prev().Nodes == nil {
-				otherCol = otherCol.Siblings().Last()
-			} else if col.Next().Nodes == nil {
-				otherCol = otherCol.Siblings().First()
-			} else {
-				return false
+			if otherCol.Siblings().Nodes != nil {
+				if col.Prev().Nodes == nil {
+					otherCol = otherCol.Siblings().Last()
+				} else if col.Next().Nodes == nil {
+					otherCol = otherCol.Siblings().First()
+				} else {
+					return false
+				}
 			}
 
 			return match(otherCol.Text())
