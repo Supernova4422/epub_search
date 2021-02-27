@@ -77,7 +77,7 @@ func main() {
 			}
 			
 			joined += match
-			if len(joined) > 1700 {
+			if len(joined) > 1200 {
 				break
 			} else {
 				result = joined
