@@ -23,12 +23,12 @@ func cleanInput(str string) string {
 //
 // html is expected to be HTML or XHTML conformant.
 // Query is a string.
-func GetAdjacent(query string, html io.Reader) (string, error) {
+func GetAdjacent(query string, html io.Reader) (int, *goquery.Selection, error) {
 	query = strings.ToLower(query)
 
 	doc, err := goquery.NewDocumentFromReader(html)
 	if err != nil {
-		return "", err
+		return 0, nil, err
 	}
 
 	rows := doc.Find("td")
@@ -43,7 +43,7 @@ func GetAdjacent(query string, html io.Reader) (string, error) {
 		return query == rhs
 	})
 	if len(match.Nodes) != 0 {
-		return match.Text(), nil
+		return 0, match, nil
 	}
 
 	queryWithoutDiacritics := RemoveDiacritics(query)
@@ -53,7 +53,7 @@ func GetAdjacent(query string, html io.Reader) (string, error) {
 		return queryWithoutDiacritics == RemoveDiacritics(rhs)
 	})
 	if len(match.Nodes) != 0 {
-		return match.Text(), nil
+		return 0, match, nil
 	}
 
 	match = foo(rows, func(rhs string) bool {
@@ -67,7 +67,7 @@ func GetAdjacent(query string, html io.Reader) (string, error) {
 		return false
 	})
 	if len(match.Nodes) != 0 {
-		return match.Text(), nil
+		return 1, match, nil
 	}
 
 	match = foo(rows, func(rhs string) bool {
@@ -80,10 +80,10 @@ func GetAdjacent(query string, html io.Reader) (string, error) {
 		return false
 	})
 	if len(match.Nodes) != 0 {
-		return match.Text(), nil
+		return 2, match, nil
 	}
 
-	return "", errors.New("no result found")
+	return 0, nil, errors.New("no result found")
 }
 
 func foo(rows *goquery.Selection, match func(string) bool) *goquery.Selection {

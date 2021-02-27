@@ -7,7 +7,7 @@ import (
 )
 
 func TestNoMatch(t *testing.T) {
-	_, err := GetAdjacent("", strings.NewReader("<ta<ta<bl>"))
+	_, _, err := GetAdjacent("", strings.NewReader("<ta<ta<bl>"))
 
 	if err == nil {
 		t.Fail()
@@ -23,9 +23,9 @@ func TestQuery(t *testing.T) {
 		expect,
 	)
 
-	result, err := GetAdjacent(query, strings.NewReader(content))
+	rank, result, err := GetAdjacent(query, strings.NewReader(content))
 
-	if err != nil || expect != result {
+	if err != nil || expect != result.Text() || rank != 0 {
 		t.Fail()
 	}
 }
@@ -39,9 +39,9 @@ func TestBackwardsQuery(t *testing.T) {
 		query,
 	)
 
-	result, err := GetAdjacent(query, strings.NewReader(content))
+	rank, result, err := GetAdjacent(query, strings.NewReader(content))
 
-	if err != nil || expect != result {
+	if err != nil || expect != result.Text() || rank != 0 {
 		t.Fail()
 	}
 }
@@ -55,9 +55,9 @@ func TestTwo(t *testing.T) {
 		query,
 	)
 
-	result, err := GetAdjacent(query, strings.NewReader(content))
+	rank, result, err := GetAdjacent(query, strings.NewReader(content))
 
-	if err != nil || expect != result {
+	if err != nil || expect != result.Text() || rank != 0 {
 		t.Fail()
 	}
 }
@@ -70,9 +70,9 @@ func TestDiacritics(t *testing.T) {
 		query,
 	)
 
-	result, err := GetAdjacent("é", strings.NewReader(content))
+	rank, result, err := GetAdjacent("é", strings.NewReader(content))
 
-	if err != nil || expect != result {
+	if err != nil || expect != result.Text() || rank != 0 {
 		t.Fail()
 	}
 }
@@ -86,9 +86,9 @@ func TestWithoutDiacritics(t *testing.T) {
 		query,
 	)
 
-	result, err := GetAdjacent("e", strings.NewReader(content))
+	rank, result, err := GetAdjacent("e", strings.NewReader(content))
 
-	if err != nil || expect != result {
+	if err != nil || expect != result.Text() || rank != 0 {
 		t.Fail()
 	}
 }
@@ -104,9 +104,9 @@ func TestFavorDiacritics(t *testing.T) {
 		queryDiacritic,
 	)
 
-	result, err := GetAdjacent(query, strings.NewReader(content))
+	rank, result, err := GetAdjacent(query, strings.NewReader(content))
 
-	if err != nil || expect != result {
+	if err != nil || expect != result.Text() || rank != 0 {
 		t.Fail()
 	}
 }
@@ -130,9 +130,9 @@ func TestContains(t *testing.T) {
 		query,
 	)
 
-	result, err := GetAdjacent(query, strings.NewReader(content))
+	rank, result, err := GetAdjacent(query, strings.NewReader(content))
 
-	if err != nil || expect != result {
+	if err != nil || expect != result.Text() || rank != 1 {
 		t.Fail()
 	}
 }
@@ -148,9 +148,9 @@ func TestContainsNoDiacritics(t *testing.T) {
 		query,
 	)
 
-	result, err := GetAdjacent(queryWithoutDiacritics, strings.NewReader(content))
+	rank, result, err := GetAdjacent(queryWithoutDiacritics, strings.NewReader(content))
 
-	if err != nil || expect != result {
+	if err != nil || expect != result.Text() || rank != 2 {
 		t.Fail()
 	}
 }
@@ -171,9 +171,9 @@ func TestTripleRow(t *testing.T) {
 		query,
 	)
 
-	result, err := GetAdjacent(queryWithoutDiacritics, strings.NewReader(content))
+	rank, result, err := GetAdjacent(queryWithoutDiacritics, strings.NewReader(content))
 
-	if err != nil || expect != result {
+	if err != nil || expect != result.Text() || rank != 0 {
 		t.Fail()
 	}
 }
