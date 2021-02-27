@@ -73,7 +73,7 @@ func main() {
 		for _, match := range matches {
 			joined := result
 			if joined != "" {
-				joined += "\n"
+				joined += "\n\n"
 			}
 			
 			joined += match
