@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
-	"math"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -36,7 +35,7 @@ func main() {
 			return
 		}
 
-		bestRank := math.MaxInt64
+		bestRank := -1
 		matches := make([]string, 0)
 
 		for _, file := range files {
@@ -55,7 +54,7 @@ func main() {
 			rank, result, err := GetAdjacent(query, contents)
 			if err == nil {
 				prepend := false
-				if rank <= bestRank {
+				if rank <= bestRank || bestRank < 0 {
 					bestRank = rank
 					prepend = true
 
