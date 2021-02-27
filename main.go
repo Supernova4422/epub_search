@@ -62,7 +62,7 @@ func main() {
 		}
 
 		if found {
-			fmt.Fprintf(w, "<p id=\"result\">"+bestResult.Text()+"</p>")
+			fmt.Fprintf(w, "<p id=\"result\">"+bestResult.Parent().Text()+"</p>")
 		}
 	})
 
