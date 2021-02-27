@@ -78,11 +78,11 @@ func main() {
 		for _, match := range matches {
 			joined := result
 			if joined != "" {
-				joined += "\n\n"
+				joined += "\n"
 			}
 			
 			joined += match
-			if len(joined) > 1200 {
+			if len(joined) > 1500 {
 				break
 			} else {
 				result = joined
