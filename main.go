@@ -71,7 +71,12 @@ func main() {
 
 		result := ""
 		for _, match := range matches {
-			joined := result + "\n" + match
+			joined := result
+			if joined != "" {
+				joined += "\n"
+			}
+			
+			joined += match
 			if len(joined) > 1700 {
 				break
 			} else {
