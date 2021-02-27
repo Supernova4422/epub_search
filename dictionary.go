@@ -12,6 +12,13 @@ import (
 	"golang.org/x/text/unicode/norm"
 )
 
+func cleanInput(str string) string {
+	str = strings.ToLower(str)
+	str = strings.ReplaceAll(str, ",", " ")
+	str = strings.ReplaceAll(str, ".", " ")
+	return str
+}
+
 // GetAdjacent finds tables, then returns cells adjacent to those matching query.
 //
 // html is expected to be HTML or XHTML conformant.
@@ -27,12 +34,12 @@ func GetAdjacent(query string, html io.Reader) (string, error) {
 	rows := doc.Find("td")
 	rows = rows.FilterFunction(
 		func(_ int, col *goquery.Selection) bool {
-			return col.Parent().Children().Length() == 2
+			return col.Parent().Children().Length() >= 2
 		},
 	)
 
 	match := foo(rows, func(rhs string) bool {
-		rhs = strings.ToLower(rhs)
+		rhs = cleanInput(rhs)
 		return query == rhs
 	})
 	if len(match.Nodes) != 0 {
@@ -42,7 +49,7 @@ func GetAdjacent(query string, html io.Reader) (string, error) {
 	queryWithoutDiacritics := RemoveDiacritics(query)
 
 	match = foo(rows, func(rhs string) bool {
-		rhs = strings.ToLower(rhs)
+		rhs = cleanInput(rhs)
 		return queryWithoutDiacritics == RemoveDiacritics(rhs)
 	})
 	if len(match.Nodes) != 0 {
@@ -50,7 +57,8 @@ func GetAdjacent(query string, html io.Reader) (string, error) {
 	}
 
 	match = foo(rows, func(rhs string) bool {
-		rhs = strings.ToLower(rhs)
+		rhs = cleanInput(rhs)
+
 		for _, word := range strings.Fields(rhs) {
 			if word == query {
 				return true
@@ -63,7 +71,7 @@ func GetAdjacent(query string, html io.Reader) (string, error) {
 	}
 
 	match = foo(rows, func(rhs string) bool {
-		rhs = strings.ToLower(rhs)
+		rhs = cleanInput(rhs)
 		for _, word := range strings.Fields(RemoveDiacritics(rhs)) {
 			if word == query {
 				return true
@@ -81,9 +89,14 @@ func GetAdjacent(query string, html io.Reader) (string, error) {
 func foo(rows *goquery.Selection, match func(string) bool) *goquery.Selection {
 	return rows.FilterFunction(
 		func(_ int, col *goquery.Selection) bool {
-			otherCol := col.Next()
-			if len(otherCol.Nodes) == 0 {
-				otherCol = col.Prev()
+
+			otherCol := col
+			if col.Prev().Nodes == nil {
+				otherCol = otherCol.Siblings().Last()
+			} else if col.Next().Nodes == nil {
+				otherCol = otherCol.Siblings().First()
+			} else {
+				return false
 			}
 
 			return match(otherCol.Text())

@@ -154,3 +154,26 @@ func TestContainsNoDiacritics(t *testing.T) {
 		t.Fail()
 	}
 }
+
+func TestTripleRow(t *testing.T) {
+	query := "tést"
+	queryWithoutDiacritics := "test"
+	expect := "b"
+
+	// Only check for the first and last columns. Ignore the middle ones.
+	content := fmt.Sprintf(
+		("<table>" +
+			"<tr><td>e</td><td>%s</td><td>c</td></tr>" +
+			"<tr><td>%s</td><td>ignore</td><td>%s</td></tr>" +
+			"</table>"),
+		query,
+		expect,
+		query,
+	)
+
+	result, err := GetAdjacent(queryWithoutDiacritics, strings.NewReader(content))
+
+	if err != nil || expect != result {
+		t.Fail()
+	}
+}
