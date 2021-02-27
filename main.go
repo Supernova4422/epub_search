@@ -59,7 +59,7 @@ func main() {
 
 				output := result.Parent().Text()
 				output = strings.ReplaceAll(output, "\n", " ")
-				if rank < bestRank {
+				if rank <= bestRank {
 					matches = append(matches, "")
 					copy(matches[1:], matches)
 					matches[0] = output
