@@ -1,4 +1,4 @@
-FROM golang:1.15
+FROM golang:1.15-alpine
 
 ARG binary_filename="main"
 ARG project_path="/project"
