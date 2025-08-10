@@ -9,7 +9,7 @@ services:
     ports:
       - '8080:8080'
     volumes:
-      - ./epub_search_config.log:/config
+      - ./epub_search_config:/config
 
   logger:
     image: grafana/grafana
