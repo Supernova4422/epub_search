@@ -1,17 +1,41 @@
 package main
 
 import (
+	"context"
+	"errors"
 	"flag"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
+	"os/signal"
 	"path/filepath"
 	"strings"
+
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promauto"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"go.opentelemetry.io/otel"
 )
 
 func main() {
+	log.Println("Starting")
+
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
+	defer stop()
+
+	// Set up OpenTelemetry.
+	otelShutdown, err := setupOTelSDK(ctx)
+	if err != nil {
+		return
+	}
+
+	// Handle shutdown properly so nothing leaks.
+	defer func() {
+		err = errors.Join(err, otelShutdown(context.Background()))
+	}()
+
 	var port int
 	var folder string
 
@@ -26,9 +50,30 @@ func main() {
 
 	flag.Parse()
 
+	log.Println("Using Port:", port, "with folder:", folder)
+
+
+
+	var (
+		opsProcessed = promauto.NewCounter(prometheus.CounterOpts{
+				Name: "epubSearch_Query",
+				Help: "The total number of processed queries",
+		})
+	)
+
+	tracer := otel.Tracer("epub_search")
+	http.Handle("/metrics", promhttp.Handler())
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		opsProcessed.Inc()
+
+		_, span := tracer.Start(ctx, "request")
+		defer span.End()
+
 		subfolder := r.URL.Query().Get("f")
 		query := r.URL.Query().Get("q")
+
+		log.Println("Received request with query:", query)
+
 		queryFolder := filepath.Join(folder, subfolder)
 		files, err := ioutil.ReadDir(queryFolder)
 		if err != nil {
@@ -39,6 +84,8 @@ func main() {
 		matches := make([]string, 0)
 
 		for _, file := range files {
+			_, fileSpan := tracer.Start(ctx, "search" + file.Name())
+
 			if file.IsDir() {
 				continue
 			}
@@ -48,6 +95,7 @@ func main() {
 			defer contents.Close()
 
 			if err != nil {
+				fileSpan.End()
 				return
 			}
 
@@ -72,6 +120,8 @@ func main() {
 					}
 				}
 			}
+
+			fileSpan.End()
 		}
 
 		result := ""
@@ -92,5 +142,6 @@ func main() {
 	})
 
 	http.ListenAndServe(fmt.Sprintf(":%d", port), nil)
+
 	log.Fatal()
 }
