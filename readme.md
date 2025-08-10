@@ -29,3 +29,6 @@ will search through all files under foldername until it finds a cell with
 
 The unit tests will help with understanding.
 
+# How to start via docker
+
+`docker compose up -d`
